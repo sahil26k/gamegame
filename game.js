@@ -234,7 +234,7 @@ function hideDialogue() {
 function update() {
     if (!player) return;
     
-    const speed = 100;  // Slower speed for retro feel
+    const speed = 70;  // Slower speed for retro feel
     
     // E key to toggle dialogue
     if (Phaser.Input.Keyboard.JustDown(this.input.keyboard.addKey('E'))) {

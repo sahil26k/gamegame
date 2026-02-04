@@ -1498,7 +1498,7 @@ class GameScene extends Phaser.Scene {
     handleMovement() {
         if (this.isDying || this.isChopping) return;
         
-        const speed = 100;
+        const speed = 70;
         
         // --- 1. HANDLE PLAYER MOVEMENT (WASD ONLY) ---
         this.player.setVelocity(0);
