@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Nishi <3</title>
+    <link rel="icon" type="image/png" href="favicon-32x32.png">
+    <link rel="stylesheet" href="src/ui/dialogue.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.6);
+            --accent-primary: #8e44ad;
+            --accent-secondary: #ff7eb3;
+            --text-main: #2c0b36;
+            --text-dim: #583961;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: #eea1e3; /* Solid Light Pink */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: var(--text-main);
+        }
+
+        /* Removed ambient background animations */
+
+        .page-ui {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            width: 100%;
+            max-width: 1200px;
+            padding: 2rem;
+            animation: fadeIn 1.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* HIDING TEXT AS REQUESTED */
+        .game-header, .game-info {
+            display: none; 
+        }
+
+        /* Container with Plushie Stitching */
+        .game-wrapper {
+            position: relative;
+            padding: 12px; /* Increased for stitching room */
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(20px);
+            border: 4px solid rgba(255, 255, 255, 0.8);
+            border-radius: 2.5rem;
+            box-shadow: 
+                0 20px 60px rgba(44, 11, 54, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.5);
+            z-index: 10;
+        }
+
+        /* The Stitching Effect */
+        .game-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 6px; left: 6px; right: 6px; bottom: 6px;
+            border: 2px dashed rgba(142, 68, 173, 0.5); /* Purple stitching */
+            border-radius: 2rem;
+            pointer-events: none;
+        }
+
+        #game-canvas {
+            border-radius: 1.8rem; /* Matches inner curve */
+            overflow: hidden;
+            display: block;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Floating Background Icons */
+        .bg-decor {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .floating-icon {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.6;
+            animation: floatUp linear infinite;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        @keyframes floatUp {
+            0% { transform: translateY(110vh) rotate(0deg) scale(0.8); opacity: 0; }
+            10% { opacity: 0.7; }
+            90% { opacity: 0.7; }
+            100% { transform: translateY(-10vh) rotate(20deg) scale(1); opacity: 0; }
+        }
+
+        /* Welcome Screen Typography */
+        #page-loader {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background-color: #eea1e3; /* Force Solid Pink */
+            z-index: 10000; /* Highest */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer; 
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+        .welcome-content { 
+            text-align: center; 
+            max-width: 800px;
+            padding: 2rem;
+        }
+        .welcome-title {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #2c0b36;
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: fadeInUp 1.2s ease-out 0.5s forwards;
+        }
+        .welcome-subtitle {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.5rem;
+            color: #8e44ad;
+            font-weight: 500;
+            opacity: 0;
+            animation: fadeInUp 1.2s ease-out 2s forwards;
+        }
+        .continue-hint {
+            margin-top: 3rem;
+            font-size: 0.9rem;
+            color: rgba(44, 11, 54, 0.5);
+            opacity: 0;
+            animation: fadeInUp 1s ease-out 4s forwards;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .hidden {
+            opacity: 0 !important;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        /* Mobile Blocker */
+        .mobile-blocker {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .mobile-blocker {
+                display: flex;
+                position: fixed;
+                top: 0; left: 0;
+                width: 100vw; height: 100vh;
+                background: #eea1e3;
+                z-index: 20000;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                padding: 2rem;
+                color: #2c0b36;
+            }
+            .mobile-title {
+                font-size: 2rem;
+                font-weight: 700;
+                margin-bottom: 1rem;
+            }
+            .mobile-icon {
+                font-size: 4rem;
+                margin-bottom: 2rem;
+            }
+            /* Hide other interactive layers */
+            #page-loader, .page-ui, .bg-decor {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Warning -->
+    <div class="mobile-blocker">
+        <div class="mobile-icon">💻</div>
+        <div class="mobile-title">Please open in Laptop</div>
+        <p>This experience is designed for a larger screen.</p>
+    </div>
+
+    <div id="page-loader" onclick="this.classList.add('hidden')">
+        <div class="welcome-content">
+            <h1 class="welcome-title">Hi Nishi,</h1>
+            <p class="welcome-subtitle">I made a little something...</p>
+            <div class="continue-hint">(Tap to Start)</div>
+        </div>
+    </div>
+
+    <!-- Floating Background Decor -->
+    <div class="bg-decor">
+        <!-- Manually positioned for aesthetics -->
+        <div class="floating-icon" style="left: 10%; animation-duration: 15s; animation-delay: 0s;">🖤</div>
+        <div class="floating-icon" style="left: 20%; animation-duration: 18s; animation-delay: 2s; font-size: 1.5rem;">⭐</div>
+        <!-- <div class="floating-icon" style="left: 35%; animation-duration: 20s; animation-delay: 5s;">💀</div> -->
+        <div class="floating-icon" style="left: 50%; animation-duration: 12s; animation-delay: 1s;">💜</div>
+        <div class="floating-icon" style="left: 65%; animation-duration: 22s; animation-delay: 3s;">🖤</div>
+        <!-- <div class="floating-icon" style="left: 80%; animation-duration: 16s; animation-delay: 6s; font-size: 2.5rem;">💀</div> -->
+        <div class="floating-icon" style="left: 90%; animation-duration: 19s; animation-delay: 4s;">💜</div>
+    </div>
+
+    <div class="page-ui">
+        <header class="game-header">
+            <h1 class="game-title">Our Adventure</h1>
+            <p class="game-subtitle">Explore the Unfinished Dreams</p>
+        </header>
+
+        <main class="game-wrapper">
+            <div id="game-canvas"></div>
+        </main>
+
+        <footer class="game-info">
+            <div class="info-tag">Move <strong>WASD</strong></div>
+            <div class="info-tag">Interact <strong>E</strong></div>
+            <div class="info-tag">Select <strong>Y / N</strong></div>
+        </footer>
+    </div>
+
+    <!-- Phaser 3 -->
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
+    
+    <!-- Game files -->
+    <script src="src/systems/DialogueSystem.js"></script>
+    <script src="src/systems/GameState.js"></script>
+    <script src="src/systems/UIOverlay.js"></script>
+    <script src="src/systems/InteractionManager.js"></script>
+    <script src="src/systems/MemoryRegistry.js"></script>
+    <script src="src/systems/ToastNotification.js"></script>
+    <script src="src/systems/DeviceMenu.js"></script>
+    <script src="src/scenes/BootScene.js"></script>
+    <script src="src/scenes/MenuScene.js"></script>
+    <script src="src/scenes/FragmentViewerScene.js"></script>
+    <script src="src/scenes/GameScene.js"></script>
+    <script src="src/main.js"></script>
+</body>
+</html>
