@@ -226,9 +226,7 @@ class MenuScene extends Phaser.Scene {
             item.on('pointerdown', () => confirmSelection());
         });
 
-        // Hide Page Loader
-        const loader = document.getElementById('page-loader');
-        if (loader) loader.classList.add('hidden');
+        // Page loader is hidden only after user enters password and taps to start
     }
 
     changeSelection(delta) {

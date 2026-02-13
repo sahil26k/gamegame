@@ -62,12 +62,7 @@ class GameScene extends Phaser.Scene {
         
         this.setupEntities();
 
-        // Hide Page Loader
-        // Hide Page Loader
-        const loader = document.getElementById('page-loader');
-        if (loader) {
-            loader.classList.add('hidden');
-        }
+        // Page loader is hidden only after user enters password and taps to start
         
         // Game Start Monologue
         this.time.delayedCall(1000, () => {

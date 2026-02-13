@@ -158,6 +158,71 @@
             opacity: 0;
             animation: fadeInUp 1s ease-out 4s forwards;
         }
+
+        /* Password Gate */
+        .password-gate {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease-out 3s forwards;
+        }
+        .password-input {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1rem;
+            padding: 0.6rem 1rem;
+            border: 2px solid rgba(142, 68, 173, 0.5);
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-main);
+            width: 100%;
+            max-width: 220px;
+            outline: none;
+            text-align: center;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .password-input::placeholder {
+            color: rgba(44, 11, 54, 0.4);
+        }
+        .password-input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.2);
+        }
+        .password-btn {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 1rem;
+            background: linear-gradient(135deg, var(--accent-primary), #a569bd);
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .password-btn:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 15px rgba(142, 68, 173, 0.4);
+        }
+        .password-error {
+            font-size: 0.85rem;
+            color: #c0392b;
+            min-height: 1.2rem;
+        }
+        .password-gate.unlocked {
+            display: none;
+        }
+        .game-loading {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: rgba(44, 11, 54, 0.6);
+            display: none;
+        }
+        .game-loading.visible {
+            display: block;
+        }
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -212,11 +277,17 @@
         <p>This experience is designed for a larger screen.</p>
     </div>
 
-    <div id="page-loader" onclick="this.classList.add('hidden')">
+    <div id="page-loader">
         <div class="welcome-content">
             <h1 class="welcome-title">Hi Nishi,</h1>
             <p class="welcome-subtitle">I made a little something...</p>
-            <div class="continue-hint">(Tap to Start)</div>
+            <div class="password-gate" id="password-gate">
+                <input type="password" class="password-input" id="password-input" placeholder="Enter password" autocomplete="off">
+                <button type="button" class="password-btn" id="password-btn">Unlock</button>
+                <div class="password-error" id="password-error"></div>
+            </div>
+            <div class="game-loading" id="game-loading">Loading...</div>
+            <div class="continue-hint" id="continue-hint" style="display: none;">(Tap to Start)</div>
         </div>
     </div>
 
@@ -249,21 +320,91 @@
         </footer>
     </div>
 
-    <!-- Phaser 3 -->
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js"></script>
-    
-    <!-- Game files -->
-    <script src="src/systems/DialogueSystem.js"></script>
-    <script src="src/systems/GameState.js"></script>
-    <script src="src/systems/UIOverlay.js"></script>
-    <script src="src/systems/InteractionManager.js"></script>
-    <script src="src/systems/MemoryRegistry.js"></script>
-    <script src="src/systems/ToastNotification.js"></script>
-    <script src="src/systems/DeviceMenu.js"></script>
-    <script src="src/scenes/BootScene.js"></script>
-    <script src="src/scenes/MenuScene.js"></script>
-    <script src="src/scenes/FragmentViewerScene.js"></script>
-    <script src="src/scenes/GameScene.js"></script>
-    <script src="src/main.js"></script>
+    <!-- Gate: game scripts load ONLY after correct password -->
+    <!-- To change password: run in console to get new hash, then replace PWD_HASH:
+         crypto.subtle.digest('SHA-256',new TextEncoder().encode('yourpass')).then(h=>console.log([...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,'0')).join(''))) -->
+    <script>
+        (function() {
+            var PWD_HASH = 'ccb6029a312d2fe21d36d149af94c14fde05e6d376c21bab491ff49087c7354c'; // SHA-256 of password
+            var gate = document.getElementById('password-gate');
+            var input = document.getElementById('password-input');
+            var btn = document.getElementById('password-btn');
+            var err = document.getElementById('password-error');
+            var loader = document.getElementById('page-loader');
+            var loadingEl = document.getElementById('game-loading');
+            var hint = document.getElementById('continue-hint');
+            var gameLoaded = false;
+
+            var GAME_SCRIPTS = [
+                'https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.min.js',
+                'src/systems/DialogueSystem.js',
+                'src/systems/GameState.js',
+                'src/systems/UIOverlay.js',
+                'src/systems/InteractionManager.js',
+                'src/systems/MemoryRegistry.js',
+                'src/systems/ToastNotification.js',
+                'src/systems/DeviceMenu.js',
+                'src/scenes/BootScene.js',
+                'src/scenes/MenuScene.js',
+                'src/scenes/FragmentViewerScene.js',
+                'src/scenes/GameScene.js',
+                'src/main.js'
+            ];
+
+            function loadScripts(idx) {
+                if (idx >= GAME_SCRIPTS.length) {
+                    gameLoaded = true;
+                    loadingEl.classList.remove('visible');
+                    hint.style.display = 'block';
+                    hint.style.opacity = '1';
+                    loader.style.cursor = 'pointer';
+                    loader.onclick = function() { loader.classList.add('hidden'); };
+                    return;
+                }
+                var s = document.createElement('script');
+                s.src = GAME_SCRIPTS[idx];
+                s.onload = function() { loadScripts(idx + 1); };
+                s.onerror = function() {
+                    loadingEl.textContent = 'Failed to load. Refresh and try again.';
+                };
+                document.body.appendChild(s);
+            }
+
+            function unlock() {
+                gate.classList.add('unlocked');
+                loadingEl.classList.add('visible');
+                loadingEl.textContent = 'Loading...';
+                loadScripts(0);
+            }
+
+            function hashInput(val) {
+                return crypto.subtle.digest('SHA-256', new TextEncoder().encode(val))
+                    .then(function(h) {
+                        return Array.from(new Uint8Array(h)).map(function(x) {
+                            return x.toString(16).padStart(2, '0');
+                        }).join('');
+                    });
+            }
+
+            function checkPassword() {
+                var val = input.value;
+                hashInput(val).then(function(hex) {
+                    if (hex === PWD_HASH) {
+                        err.textContent = '';
+                        unlock();
+                    } else {
+                        err.textContent = 'Wrong password. Try again.';
+                        input.value = '';
+                        input.focus();
+                    }
+                });
+            }
+
+            btn.addEventListener('click', checkPassword);
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') checkPassword();
+            });
+        })();
+    </script>
 </body>
 </html>
